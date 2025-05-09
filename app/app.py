@@ -5,22 +5,25 @@ from werkzeug.utils import secure_filename
 from PyPDF2 import PdfReader
 import io
 import logging
+from .config import UPLOAD_FOLDER, ALLOWED_EXTENSIONS, S3_BUCKET
+from .summarizer import summarize_text
 
 app = Flask(__name__)
 app.secret_key = os.urandom(24)
+
+# Configure max upload size (50MB)
+app.config['MAX_CONTENT_LENGTH'] = 50 * 1024 * 1024
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 # Configure upload folder
-UPLOAD_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'uploads')
-ALLOWED_EXTENSIONS = {'txt', 'pdf'}
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 # AWS Configuration
 s3_client = boto3.client('s3')
-BUCKET_NAME = os.getenv('S3_BUCKET', 'summary-gen-uploads')
+BUCKET_NAME = S3_BUCKET
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -75,8 +78,9 @@ def upload_file():
                         s3_client.upload_file(filepath, BUCKET_NAME, filename)
                         logger.info(f"File uploaded to S3 bucket {BUCKET_NAME}")
                         
-                        # Generate summary (simple version - first 500 characters)
-                        summary = text[:500] + "..." if len(text) > 500 else text
+                        # Generate summary using the summarizer module
+                        summary = summarize_text(text)
+                        logger.info("Summary generated successfully")
                         
                         # Clean up local file
                         os.remove(filepath)
@@ -95,4 +99,4 @@ def upload_file():
 
 if __name__ == '__main__':
     os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-    app.run(host='0.0.0.0', port=5001, debug=True)
+    app.run(host='0.0.0.0', port=5001)

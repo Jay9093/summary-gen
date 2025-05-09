@@ -1,0 +1,233 @@
+/* Modern UI Styles */
+:root {
+    --primary-color: #4f46e5;
+    --primary-hover: #4338ca;
+    --background-color: #f9fafb;
+    --text-color: #111827;
+    --border-color: #e5e7eb;
+    --shadow-color: rgba(0, 0, 0, 0.1);
+    --success-color: #059669;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: "Inter", system-ui, -apple-system, sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-color);
+    line-height: 1.5;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1024px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 4rem;
+    padding-top: 2rem;
+}
+
+header h1 {
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+    letter-spacing: -0.025em;
+}
+
+header p {
+    font-size: 1.25rem;
+    color: #4b5563;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.upload-section {
+    background: white;
+    padding: 3rem;
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px var(--shadow-color);
+    margin-bottom: 3rem;
+}
+
+.file-upload {
+    margin-bottom: 2rem;
+}
+
+.file-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    border: 3px dashed var(--border-color);
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #f8fafc;
+}
+
+.file-label:hover {
+    border-color: var(--primary-color);
+    background-color: #eef2ff;
+}
+
+.file-label.highlight {
+    border-color: var(--primary-color);
+    background-color: #eef2ff;
+}
+
+.file-icon {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+    color: var(--primary-color);
+}
+
+.file-text {
+    font-size: 1.25rem;
+    color: #6b7280;
+    font-weight: 500;
+}
+
+input[type="file"] {
+    display: none;
+}
+
+.submit-btn {
+    width: 100%;
+    padding: 1.25rem;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 0.75rem;
+    font-size: 1.125rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.submit-btn:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px -1px var(--shadow-color);
+}
+
+.summary-section {
+    background: white;
+    padding: 3rem;
+    border-radius: 1rem;
+    box-shadow: 0 10px 15px -3px var(--shadow-color);
+}
+
+.summary-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+.summary-section h2 {
+    font-size: 2rem;
+    color: var(--primary-color);
+    font-weight: 700;
+}
+
+.summary-content {
+    background-color: #f9fafb;
+    padding: 2rem;
+    border-radius: 0.75rem;
+    border: 2px solid var(--border-color);
+    font-size: 1.125rem;
+    line-height: 1.75;
+}
+
+footer {
+    text-align: center;
+    margin-top: 4rem;
+    padding: 2rem 0;
+    color: #6b7280;
+    font-size: 1rem;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+
+    header h1 {
+        font-size: 2.5rem;
+    }
+
+    header p {
+        font-size: 1.125rem;
+    }
+
+    .upload-section,
+    .summary-section {
+        padding: 2rem;
+    }
+
+    .file-label {
+        padding: 2rem;
+    }
+}
+
+/* Loading State */
+.submit-btn:disabled {
+    background-color: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Animation */
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.file-label.dragover {
+    animation: pulse 0.5s ease-in-out;
+    border-color: var(--primary-color);
+    background-color: #eef2ff;
+}
+
+/* Progress Bar */
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: var(--border-color);
+    border-radius: 4px;
+    margin-top: 1rem;
+    overflow: hidden;
+}
+
+.progress-bar-fill {
+    height: 100%;
+    background-color: var(--primary-color);
+    transition: width 0.3s ease;
+}
+
+/* Success Message */
+.success-message {
+    color: var(--success-color);
+    font-weight: 600;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.success-icon {
+    font-size: 1.25rem;
+} 

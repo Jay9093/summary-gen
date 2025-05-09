@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document Summary Generator</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css', v='1.2') }}">
 </head>
 <body>
     <div class="container">
@@ -15,8 +15,18 @@
         </header>
 
         <main>
+            {% with messages = get_flashed_messages() %}
+                {% if messages %}
+                    <div class="error-message">
+                        {% for message in messages %}
+                            <p>{{ message }}</p>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            {% endwith %}
+
             <section class="upload-section">
-                <form method="post" enctype="multipart/form-data">
+                <form method="post" enctype="multipart/form-data" id="upload-form">
                     <div class="file-upload">
                         <label for="file" class="file-label">
                             <span class="file-icon">📄</span>
@@ -24,7 +34,10 @@
                             <input type="file" name="file" id="file" accept=".txt,.pdf" required>
                         </label>
                     </div>
-                    <button type="submit" class="submit-btn">Upload and Summarize</button>
+                    <button type="submit" class="submit-btn" id="submit-btn">
+                        <span class="btn-text">Upload and Summarize</span>
+                        <div class="loading-spinner"></div>
+                    </button>
                 </form>
             </section>
 
@@ -47,6 +60,8 @@
         // Add drag and drop functionality
         const fileInput = document.getElementById('file');
         const fileLabel = document.querySelector('.file-label');
+        const form = document.getElementById('upload-form');
+        const submitBtn = document.getElementById('submit-btn');
 
         ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
             fileLabel.addEventListener(eventName, preventDefaults, false);
@@ -80,6 +95,13 @@
             const files = dt.files;
             fileInput.files = files;
         }
+
+        // Add loading state
+        form.addEventListener('submit', function(e) {
+            submitBtn.classList.add('loading');
+            submitBtn.disabled = true;
+            submitBtn.querySelector('.btn-text').textContent = 'Processing...';
+        });
     </script>
 </body>
 </html>

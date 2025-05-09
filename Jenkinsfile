@@ -6,6 +6,8 @@ pipeline {
         GIT_CREDENTIALS = credentials('git-credentials')
         PYTHON_VERSION = '3.13'
         VENV_NAME = 'venv'
+        APP_NAME = 'summary-gen'
+        DOCKER_REGISTRY = 'your-docker-registry'  // Replace with your Docker Hub username
     }
 
     stages {
@@ -16,13 +18,13 @@ pipeline {
                     branches: [[name: '*/main']],
                     userRemoteConfigs: [[
                         credentialsId: 'git-credentials',
-                        url: 'https://github.com/your-username/summary-gen.git'
+                        url: 'https://github.com/Jay9093/summary-gen.git'
                     ]]
                 ])
             }
         }
 
-        stage('Setup Python Environment') {
+        stage('Build and Test') {
             steps {
                 sh '''
                     python${PYTHON_VERSION} -m venv ${VENV_NAME}
@@ -30,14 +32,6 @@ pipeline {
                     pip install --upgrade pip
                     pip install -r requirements.txt
                     pip install pytest pytest-cov
-                '''
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                sh '''
-                    . ${VENV_NAME}/bin/activate
                     pytest tests/ --cov=app --cov-report=xml
                 '''
             }
@@ -49,51 +43,22 @@ pipeline {
             }
         }
 
-        stage('Build and Push Docker Image') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    docker.withRegistry('https://index.docker.io/v1/', 'docker-credentials') {
-                        def customImage = docker.build("summary-gen:${BUILD_NUMBER}")
+                    docker.withRegistry("https://${DOCKER_REGISTRY}", 'docker-credentials') {
+                        def customImage = docker.build("${DOCKER_REGISTRY}/${APP_NAME}:${BUILD_NUMBER}")
                         customImage.push()
+                        customImage.push('latest')
                     }
                 }
             }
         }
 
-        stage('Terraform Plan') {
-            steps {
-                dir('terraform') {
-                    sh '''
-                        terraform init
-                        terraform plan -out=tfplan
-                    '''
-                }
-            }
-        }
-
-        stage('Terraform Apply') {
-            steps {
-                dir('terraform') {
-                    sh 'terraform apply -auto-approve tfplan'
-                }
-            }
-        }
-
-        stage('Integration Tests') {
-            steps {
-                sh '''
-                    . ${VENV_NAME}/bin/activate
-                    python tests/integration_test.py
-                '''
-            }
-        }
-
-        stage('Deploy Application') {
-            when {
-                branch 'main'
-            }
+        stage('Deploy to AWS') {
             steps {
                 script {
+                    // Get AWS infrastructure details from Terraform outputs
                     def appServerIP = sh(
                         script: 'cd terraform && terraform output -raw app_server_ip',
                         returnStdout: true
@@ -104,42 +69,88 @@ pipeline {
                         returnStdout: true
                     ).trim()
 
-                    sh '''
-                        echo "Deploying to ${appServerIP}"
-                        echo "S3 Bucket: ${s3BucketName}"
+                    // Create deployment configuration
+                    writeFile file: 'deploy.sh', text: """
+                        #!/bin/bash
+                        set -e
                         
-                        # Create .env file with updated values
-                        echo "AWS_S3_BUCKET=${s3BucketName}" > .env
+                        # Pull latest Docker image
+                        docker pull ${DOCKER_REGISTRY}/${APP_NAME}:${BUILD_NUMBER}
                         
-                        # Copy files to EC2 instance
-                        scp -o StrictHostKeyChecking=no -r app/* ubuntu@${appServerIP}:/home/ubuntu/app/
-                        scp -o StrictHostKeyChecking=no .env ubuntu@${appServerIP}:/home/ubuntu/app/
+                        # Stop and remove existing container if it exists
+                        docker stop ${APP_NAME} || true
+                        docker rm ${APP_NAME} || true
                         
-                        # Restart the application
-                        ssh -o StrictHostKeyChecking=no ubuntu@${appServerIP} "sudo systemctl restart ${app_name}"
-                    '''
+                        # Run new container
+                        docker run -d \\
+                            --name ${APP_NAME} \\
+                            -p 5001:5001 \\
+                            -e AWS_ACCESS_KEY_ID=${AWS_CREDENTIALS_USR} \\
+                            -e AWS_SECRET_ACCESS_KEY=${AWS_CREDENTIALS_PSW} \\
+                            -e S3_BUCKET=${s3BucketName} \\
+                            ${DOCKER_REGISTRY}/${APP_NAME}:${BUILD_NUMBER}
+                    """
+
+                    // Deploy to EC2
+                    sh """
+                        chmod +x deploy.sh
+                        scp -o StrictHostKeyChecking=no deploy.sh ubuntu@${appServerIP}:/home/ubuntu/
+                        ssh -o StrictHostKeyChecking=no ubuntu@${appServerIP} 'bash /home/ubuntu/deploy.sh'
+                    """
+                }
+            }
+        }
+
+        stage('Verify Deployment') {
+            steps {
+                script {
+                    def appServerIP = sh(
+                        script: 'cd terraform && terraform output -raw app_server_ip',
+                        returnStdout: true
+                    ).trim()
+
+                    // Wait for application to be ready
+                    sh """
+                        for i in {1..12}; do
+                            if curl -s http://${appServerIP}:5001/health; then
+                                echo "Application is up and running!"
+                                exit 0
+                            fi
+                            echo "Waiting for application to be ready..."
+                            sleep 10
+                        done
+                        echo "Application failed to start within timeout"
+                        exit 1
+                    """
                 }
             }
         }
     }
 
     post {
-        always {
-            cleanWs()
-        }
         success {
             emailext (
-                subject: "Pipeline Successful: ${currentBuild.fullDisplayName}",
-                body: "Check console output at ${env.BUILD_URL}",
+                subject: "Deployment Successful: ${currentBuild.fullDisplayName}",
+                body: """
+                    Deployment completed successfully!
+                    Build: ${BUILD_NUMBER}
+                    Check the application at: http://${sh(
+                        script: 'cd terraform && terraform output -raw app_server_ip',
+                        returnStdout: true
+                    ).trim()}:5001
+                """,
                 recipientProviders: [[$class: 'DevelopersRecipientProvider']]
             )
         }
         failure {
             emailext (
-                subject: "Pipeline Failed: ${currentBuild.fullDisplayName}",
+                subject: "Deployment Failed: ${currentBuild.fullDisplayName}",
                 body: "Check console output at ${env.BUILD_URL}",
                 recipientProviders: [[$class: 'DevelopersRecipientProvider']]
             )
+        }
+        always {
+            cleanWs()
         }
     }
 } 

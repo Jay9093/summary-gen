@@ -25,6 +25,9 @@ pip install -r requirements.txt
 # Create environment file
 cat > .env << EOL
 AWS_S3_BUCKET=${s3_bucket_name}
+AWS_ACCESS_KEY_ID=${aws_access_key}
+AWS_SECRET_ACCESS_KEY=${aws_secret_key}
+AWS_DEFAULT_REGION=${aws_region}
 EOL
 
 # Configure Nginx

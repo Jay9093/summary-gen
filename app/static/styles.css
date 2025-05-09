@@ -6,6 +6,7 @@
     --border-color: #e2e8f0;
     --shadow-color: rgba(0, 0, 0, 0.1);
     --success-color: #10b981;
+    --error-color: #ef4444;
     --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
     --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1);
 }
@@ -124,6 +125,25 @@ input[type="file"] {
     padding: 1.5rem;
     border-radius: 0.5rem;
     border: 1px solid var(--border-color);
+    white-space: pre-wrap;
+    line-height: 1.8;
+    font-size: 1.1rem;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.summary-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.summary-content::-webkit-scrollbar-track {
+    background: var(--background-color);
+    border-radius: 4px;
+}
+
+.summary-content::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
 }
 
 footer {
@@ -153,10 +173,64 @@ footer {
     cursor: not-allowed;
 }
 
+/* Loading Spinner */
+.loading-spinner {
+    display: none;
+    width: 24px;
+    height: 24px;
+    border: 3px solid var(--border-color);
+    border-radius: 50%;
+    border-top-color: var(--primary-color);
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+.loading .loading-spinner {
+    display: inline-block;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Error States */
+.error-message {
+    color: var(--error-color);
+    background-color: #fee2e2;
+    border: 1px solid #fecaca;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin: 1rem 0;
+    display: none;
+}
+
+.error .error-message {
+    display: block;
+}
+
+.file-label.error {
+    border-color: var(--error-color);
+    background-color: #fee2e2;
+}
+
+/* Accessibility Improvements */
+.submit-btn:focus,
+.file-label:focus-within {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.submit-btn:focus:not(:focus-visible),
+.file-label:focus-within:not(:focus-visible) {
+    outline: none;
+}
+
 /* Animation for file upload */
 @keyframes pulse {
     0% { transform: scale(1); }
-    50% { transform: scale(1.02); }
+    50% { transform: scale(1.05); }
     100% { transform: scale(1); }
 }
 
@@ -206,8 +280,20 @@ footer {
     font-size: 0.875rem;
 }
 
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.05); }
-    100% { transform: scale(1); }
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    :root {
+        --primary-color: #1e40af;
+        --primary-hover: #1e3a8a;
+        --text-color: #000000;
+        --border-color: #000000;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation: none !important;
+        transition: none !important;
+    }
 }

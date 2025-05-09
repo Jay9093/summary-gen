@@ -93,6 +93,13 @@ resource "aws_security_group" "app_sg" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 
+  ingress {
+    from_port   = 5001
+    to_port     = 5001
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -161,7 +168,7 @@ resource "aws_iam_instance_profile" "ec2_profile" {
 resource "aws_instance" "app_server" {
   ami           = "ami-0c7217cdde317cfec"  # Ubuntu 22.04 LTS
   instance_type = var.instance_type
-  key_name      = aws_key_pair.app_key.key_name
+  key_name      = "try1"
 
   vpc_security_group_ids = [aws_security_group.app_sg.id]
   subnet_id              = aws_subnet.public[0].id
@@ -171,6 +178,9 @@ resource "aws_instance" "app_server" {
     app_name = var.app_name
     github_repo = var.github_repo
     s3_bucket_name = aws_s3_bucket.app_uploads.bucket
+    aws_access_key = var.aws_access_key
+    aws_secret_key = var.aws_secret_key
+    aws_region = var.aws_region
   })
 
   tags = {
@@ -184,9 +194,9 @@ resource "aws_instance" "app_server" {
   }
 }
 
-resource "aws_key_pair" "app_key" {
-  key_name   = "${var.app_name}-key"
-  public_key = file("~/.ssh/id_rsa.pub")
+resource "aws_key_pair" "try1" {
+  key_name   = "try1"
+  public_key = file("${path.module}/try1.pub")
 }
 
 # S3 Bucket
