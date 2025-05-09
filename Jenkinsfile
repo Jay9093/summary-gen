@@ -15,7 +15,7 @@ pipeline {
             steps {
                 checkout([
                     $class: 'GitSCM',
-                    branches: [[name: '*/main']],
+                    branches: [[name: '*/master']],
                     userRemoteConfigs: [[
                         credentialsId: 'git-credentials',
                         url: 'https://github.com/Jay9093/summary-gen.git'

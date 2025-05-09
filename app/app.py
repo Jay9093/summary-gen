@@ -25,6 +25,11 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 s3_client = boto3.client('s3')
 BUCKET_NAME = S3_BUCKET
 
+# Add health check endpoint
+@app.route('/health')
+def health_check():
+    return {"status": "healthy", "version": "1.0.0"}, 200
+
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
