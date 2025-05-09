@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, flash
+from flask import Flask, render_template, request, flash, jsonify
 import os
 import boto3
 from werkzeug.utils import secure_filename
@@ -29,6 +29,15 @@ BUCKET_NAME = S3_BUCKET
 @app.route('/health')
 def health_check():
     return {"status": "healthy", "version": "1.0.0"}, 200
+
+# Add version endpoint
+@app.route('/version')
+def get_version():
+    return jsonify({
+        "version": "1.0.0",
+        "last_updated": "2025-05-09",
+        "environment": os.getenv('FLASK_ENV', 'development')
+    })
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
