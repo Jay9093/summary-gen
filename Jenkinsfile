@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    tools {
+        git 'Default'
+    }
+
     environment {
         AWS_CREDENTIALS = credentials('aws-credentials')
         GIT_CREDENTIALS = credentials('git-credentials')
@@ -10,34 +14,56 @@ pipeline {
         DOCKER_REGISTRY = 'your-docker-registry'  // Replace with your Docker Hub username
     }
 
+    options {
+        skipDefaultCheckout(true)
+    }
+
     stages {
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
+
         stage('Checkout') {
             steps {
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: '*/master']],
-                    userRemoteConfigs: [[
-                        credentialsId: 'git-credentials',
-                        url: 'https://github.com/Jay9093/summary-gen.git'
-                    ]]
-                ])
+                script {
+                    checkout([
+                        $class: 'GitSCM',
+                        branches: [[name: '*/master']],
+                        extensions: [
+                            [$class: 'CleanBeforeCheckout'],
+                            [$class: 'CloneOption', depth: 1, noTags: false, reference: '', shallow: true]
+                        ],
+                        userRemoteConfigs: [[
+                            credentialsId: 'git-credentials',
+                            url: 'https://github.com/Jay9093/summary-gen.git'
+                        ]]
+                    ])
+                }
             }
         }
 
         stage('Build and Test') {
             steps {
-                sh '''
-                    python${PYTHON_VERSION} -m venv ${VENV_NAME}
-                    . ${VENV_NAME}/bin/activate
-                    pip install --upgrade pip
-                    pip install -r requirements.txt
-                    pip install pytest pytest-cov
-                    pytest tests/ --cov=app --cov-report=xml
-                '''
+                script {
+                    try {
+                        sh '''
+                            python${PYTHON_VERSION} -m venv ${VENV_NAME}
+                            . ${VENV_NAME}/bin/activate
+                            pip install --upgrade pip
+                            pip install -r requirements.txt
+                            pip install pytest pytest-cov
+                            pytest tests/ --cov=app --cov-report=xml
+                        '''
+                    } catch (Exception e) {
+                        error "Build and Test failed: ${e.message}"
+                    }
+                }
             }
             post {
                 always {
-                    junit 'test-results/*.xml'
+                    junit allowEmptyResults: true, testResults: 'test-results/*.xml'
                     cobertura coberturaReportFile: 'coverage.xml'
                 }
             }
