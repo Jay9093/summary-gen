@@ -31,9 +31,9 @@ env/
 *.swp
 *.swo
 
-# AWS
-.aws/
-*.pem
+# Jenkins
+.jenkins/
+workspace/
 
 # Terraform
 .terraform/
@@ -43,11 +43,22 @@ env/
 .terraformrc
 terraform.rc
 
-# Jenkins
-.jenkins/
-workspace/
-
 # Application specific
 app/uploads/
 *.log
-.env 
+.env
+.env.*
+
+# Docker
+.docker/
+docker-compose.override.yml
+
+# Test coverage
+.coverage
+coverage.xml
+htmlcov/
+.pytest_cache/
+
+# AWS
+.aws/
+*.pem 

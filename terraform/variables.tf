@@ -1,19 +1,13 @@
 variable "aws_region" {
-  description = "AWS region"
+  description = "AWS region to deploy resources"
   type        = string
   default     = "us-east-1"
 }
 
-variable "instance_type" {
-  description = "EC2 instance type"
-  type        = string
-  default     = "t2.micro"
-}
-
 variable "app_name" {
-  description = "Application name"
+  description = "Name of the application"
   type        = string
-  default     = "flask-app"
+  default     = "summary-gen"
 }
 
 variable "environment" {
@@ -22,22 +16,20 @@ variable "environment" {
   default     = "production"
 }
 
-variable "ami_id" {
-  type    = string
-  default = "ami-0c55b159cbfafe1f0"  # Update with the latest Amazon Linux 2 AMI ID for your region
+variable "instance_type" {
+  description = "EC2 instance type"
+  type        = string
+  default     = "t2.micro"
 }
 
 variable "vpc_cidr" {
-  type    = string
-  default = "10.0.0.0/16"
+  description = "CIDR block for VPC"
+  type        = string
+  default     = "10.0.0.0/16"
 }
 
-variable "subnet_cidr" {
-  type    = string
-  default = "10.0.1.0/24"
-}
-
-variable "bucket_name" {
-  type    = string
-  default = "your-unique-bucket-name"  # Ensure this is globally unique
-}
+variable "github_repo" {
+  description = "GitHub repository URL"
+  type        = string
+  default     = "https://github.com/Jay9093/summary-gen.git"
+} 

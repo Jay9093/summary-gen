@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "5001:5001"
+    volumes:
+      - ./app:/app/app
+      - ./tests:/app/tests
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+    command: gunicorn --bind 0.0.0.0:5001 --reload app.app:app
+
+  jenkins:
+    image: jenkins/jenkins:lts
+    ports:
+      - "8081:8080"
+      - "50001:50000"
+    volumes:
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - AWS_DEFAULT_REGION=${AWS_DEFAULT_REGION}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+
+volumes:
+  jenkins_home: 

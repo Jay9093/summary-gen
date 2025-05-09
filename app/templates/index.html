@@ -4,91 +4,82 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document Summary Generator</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
 </head>
 <body>
     <div class="container">
         <header>
             <h1>Document Summary Generator</h1>
-            <p class="subtitle">Upload your document and get an AI-powered summary instantly</p>
+            <p>Upload a document to generate its summary</p>
         </header>
 
         <main>
-            <div class="upload-section">
-                <form method="post" enctype="multipart/form-data" class="upload-form">
-                    <div class="file-input-container">
-                        <input type="file" name="file" id="file" accept=".txt,.pdf" class="file-input">
+            <section class="upload-section">
+                <form method="post" enctype="multipart/form-data">
+                    <div class="file-upload">
                         <label for="file" class="file-label">
                             <span class="file-icon">📄</span>
                             <span class="file-text">Choose a file or drag it here</span>
-                            <span class="file-types">Supported formats: PDF, TXT</span>
+                            <input type="file" name="file" id="file" accept=".txt,.pdf" required>
                         </label>
                     </div>
-                    <button type="submit" class="submit-button">
-                        <span class="button-icon">✨</span>
-                        Generate Summary
-                    </button>
+                    <button type="submit" class="submit-btn">Upload and Summarize</button>
                 </form>
-            </div>
+            </section>
 
             {% if summary %}
-            <div class="summary-section">
-                <div class="summary-header">
-                    <h2>Document Summary</h2>
-                    <button id="tts-button" class="tts-button" title="Listen to summary">
-                        <span class="tts-icon">🔊</span>
-                        <span class="tts-text">Listen</span>
-                    </button>
+            <section class="summary-section">
+                <h2>Summary</h2>
+                <div class="summary-content">
+                    <p>{{ summary }}</p>
                 </div>
-                <div class="summary-content" id="summary-content">
-                    {{ summary }}
-                </div>
-            </div>
+            </section>
             {% endif %}
         </main>
 
         <footer>
-            <p>Powered by AI • Built with Flask</p>
+            <p>&copy; 2024 Document Summary Generator</p>
         </footer>
     </div>
 
     <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const ttsButton = document.getElementById('tts-button');
-            const summaryContent = document.getElementById('summary-content');
-            
-            if (ttsButton && summaryContent) {
-                let isSpeaking = false;
-                let speechSynthesis = window.speechSynthesis;
-                
-                ttsButton.addEventListener('click', function() {
-                    if (isSpeaking) {
-                        speechSynthesis.cancel();
-                        isSpeaking = false;
-                        ttsButton.innerHTML = '<span class="tts-icon">🔊</span><span class="tts-text">Listen</span>';
-                        ttsButton.classList.remove('speaking');
-                    } else {
-                        const text = summaryContent.textContent;
-                        const utterance = new SpeechSynthesisUtterance(text);
-                        
-                        utterance.onstart = function() {
-                            isSpeaking = true;
-                            ttsButton.innerHTML = '<span class="tts-icon">🔇</span><span class="tts-text">Stop</span>';
-                            ttsButton.classList.add('speaking');
-                        };
-                        
-                        utterance.onend = function() {
-                            isSpeaking = false;
-                            ttsButton.innerHTML = '<span class="tts-icon">🔊</span><span class="tts-text">Listen</span>';
-                            ttsButton.classList.remove('speaking');
-                        };
-                        
-                        speechSynthesis.speak(utterance);
-                    }
-                });
-            }
+        // Add drag and drop functionality
+        const fileInput = document.getElementById('file');
+        const fileLabel = document.querySelector('.file-label');
+
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+            fileLabel.addEventListener(eventName, preventDefaults, false);
         });
+
+        function preventDefaults(e) {
+            e.preventDefault();
+            e.stopPropagation();
+        }
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+            fileLabel.addEventListener(eventName, highlight, false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+            fileLabel.addEventListener(eventName, unhighlight, false);
+        });
+
+        function highlight(e) {
+            fileLabel.classList.add('highlight');
+        }
+
+        function unhighlight(e) {
+            fileLabel.classList.remove('highlight');
+        }
+
+        fileLabel.addEventListener('drop', handleDrop, false);
+
+        function handleDrop(e) {
+            const dt = e.dataTransfer;
+            const files = dt.files;
+            fileInput.files = files;
+        }
     </script>
 </body>
 </html>
