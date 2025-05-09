@@ -1,7 +1,14 @@
 resource "aws_security_group" "app_sg" {
-  name        = "app_sg"
-  description = "Allow inbound traffic on port 80 and 22"
+  name        = "${var.app_name}-sg"
+  description = "Security group for Flask application"
   vpc_id      = aws_vpc.main.id
+
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   ingress {
     from_port   = 80
@@ -11,8 +18,8 @@ resource "aws_security_group" "app_sg" {
   }
 
   ingress {
-    from_port   = 22
-    to_port     = 22
+    from_port   = 443
+    to_port     = 443
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
@@ -22,5 +29,10 @@ resource "aws_security_group" "app_sg" {
     to_port     = 0
     protocol    = "-1"
     cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  tags = {
+    Name        = "${var.app_name}-sg"
+    Environment = var.environment
   }
 }
