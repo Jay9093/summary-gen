@@ -2,9 +2,11 @@
 
 A Flask application that generates summaries from uploaded documents (PDF and TXT files) and stores them in AWS S3.
 
-## CI/CD Status
-- Last tested: $(date)
-- Build Status: [![Build Status](https://0b6d-2401-4900-6327-d7a1-4836-eae5-e8a3-ecaa.ngrok-free.app/buildStatus/icon?job=summary-gen)](https://0b6d-2401-4900-6327-d7a1-4836-eae5-e8a3-ecaa.ngrok-free.app/job/summary-gen/)
+## Build Status
+- Last tested: May 9, 2025
+- Environment: Jenkins Pipeline
+- Branch: master
+- Status: Testing webhook integration
 
 ## Features
 
