@@ -3,10 +3,10 @@
 A Flask application that generates summaries from uploaded documents (PDF and TXT files) and stores them in AWS S3.
 
 ## Build Status
-- Last tested: May 9, 2025
+- Last tested: May 9, 2025 14:10 IST
 - Environment: Jenkins Pipeline
-- Branch: master
-- Status: Testing webhook integration
+- Branch: master (updated)
+- Status: Testing branch configuration
 
 ## Features
 
