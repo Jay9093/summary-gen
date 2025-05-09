@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document Summary Generator</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Document Summary Generator</h1>
+            <p class="subtitle">Upload your document and get an AI-powered summary instantly</p>
+        </header>
+
+        <main>
+            <div class="upload-section">
+                <form method="post" enctype="multipart/form-data" class="upload-form">
+                    <div class="file-input-container">
+                        <input type="file" name="file" id="file" accept=".txt,.pdf" class="file-input">
+                        <label for="file" class="file-label">
+                            <span class="file-icon">📄</span>
+                            <span class="file-text">Choose a file or drag it here</span>
+                            <span class="file-types">Supported formats: PDF, TXT</span>
+                        </label>
+                    </div>
+                    <button type="submit" class="submit-button">
+                        <span class="button-icon">✨</span>
+                        Generate Summary
+                    </button>
+                </form>
+            </div>
+
+            {% if summary %}
+            <div class="summary-section">
+                <div class="summary-header">
+                    <h2>Document Summary</h2>
+                    <button id="tts-button" class="tts-button" title="Listen to summary">
+                        <span class="tts-icon">🔊</span>
+                        <span class="tts-text">Listen</span>
+                    </button>
+                </div>
+                <div class="summary-content" id="summary-content">
+                    {{ summary }}
+                </div>
+            </div>
+            {% endif %}
+        </main>
+
+        <footer>
+            <p>Powered by AI • Built with Flask</p>
+        </footer>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const ttsButton = document.getElementById('tts-button');
+            const summaryContent = document.getElementById('summary-content');
+            
+            if (ttsButton && summaryContent) {
+                let isSpeaking = false;
+                let speechSynthesis = window.speechSynthesis;
+                
+                ttsButton.addEventListener('click', function() {
+                    if (isSpeaking) {
+                        speechSynthesis.cancel();
+                        isSpeaking = false;
+                        ttsButton.innerHTML = '<span class="tts-icon">🔊</span><span class="tts-text">Listen</span>';
+                        ttsButton.classList.remove('speaking');
+                    } else {
+                        const text = summaryContent.textContent;
+                        const utterance = new SpeechSynthesisUtterance(text);
+                        
+                        utterance.onstart = function() {
+                            isSpeaking = true;
+                            ttsButton.innerHTML = '<span class="tts-icon">🔇</span><span class="tts-text">Stop</span>';
+                            ttsButton.classList.add('speaking');
+                        };
+                        
+                        utterance.onend = function() {
+                            isSpeaking = false;
+                            ttsButton.innerHTML = '<span class="tts-icon">🔊</span><span class="tts-text">Listen</span>';
+                            ttsButton.classList.remove('speaking');
+                        };
+                        
+                        speechSynthesis.speak(utterance);
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>
