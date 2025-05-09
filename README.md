@@ -21,7 +21,7 @@ A Flask application that generates summaries from uploaded documents (PDF and TX
 ## Prerequisites
 
 - Python 3.13+
-- AWS Account with appropriate permissions
+- AWS Account 
 - Jenkins server
 - Terraform
 - SSH key pair
