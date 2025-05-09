@@ -34,9 +34,10 @@ def health_check():
 @app.route('/version')
 def get_version():
     return jsonify({
-        "version": "1.0.0",
+        "version": "1.0.1",
         "last_updated": "2025-05-09",
-        "environment": os.getenv('FLASK_ENV', 'development')
+        "environment": os.getenv('FLASK_ENV', 'development'),
+        "build_number": os.getenv('BUILD_NUMBER', 'local')
     })
 
 def allowed_file(filename):
